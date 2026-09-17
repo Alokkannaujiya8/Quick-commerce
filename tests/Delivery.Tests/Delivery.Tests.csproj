@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\Delivery\Delivery.Application\Delivery.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Delivery\Delivery.Domain\Delivery.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

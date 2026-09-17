@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>QuickCart.DatabaseMigrator</AssemblyName>
+    <RootNamespace>QuickCart.DatabaseMigrator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Catalog\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Inventory\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Ordering\Ordering.Infrastructure\Ordering.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Cart\Cart.Infrastructure\Cart.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Delivery\Delivery.Infrastructure\Delivery.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Identity\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Payment\Payment.Infrastructure\Payment.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Promotion\Promotion.Infrastructure\Promotion.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
+

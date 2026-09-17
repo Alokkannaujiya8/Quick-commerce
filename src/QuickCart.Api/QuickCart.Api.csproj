@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.Presentation\BuildingBlocks.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Catalog\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Catalog\Catalog.Presentation\Catalog.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Inventory\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Inventory\Inventory.Presentation\Inventory.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Ordering\Ordering.Infrastructure\Ordering.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Ordering\Ordering.Presentation\Ordering.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Cart\Cart.Infrastructure\Cart.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Cart\Cart.Presentation\Cart.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Delivery\Delivery.Infrastructure\Delivery.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Delivery\Delivery.Presentation\Delivery.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Identity.Presentation\Identity.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Payment\Payment.Infrastructure\Payment.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Payment\Payment.Presentation\Payment.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Promotion\Promotion.Infrastructure\Promotion.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Promotion\Promotion.Presentation\Promotion.Presentation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.17.3" />
+  </ItemGroup>
+
+</Project>
