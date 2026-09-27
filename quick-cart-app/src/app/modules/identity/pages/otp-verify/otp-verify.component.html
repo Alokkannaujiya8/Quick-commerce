@@ -1,0 +1,53 @@
+<app-auth-card-shell
+  title="OTP Verification"
+  [subtitle]="'We have sent a 6-digit code to +91 ' + phoneNumber()"
+  backLink="/login"
+  backAriaLabel="Back to Phone Entry"
+  [showLegalFooter]="false"
+>
+  <div class="dev-hint">
+    <span>💡 Dev Mode: Check the backend console log for <code>[DEV OTP]</code></span>
+  </div>
+
+  <app-alert-banner [message]="errorMessage()" type="error" />
+  <app-alert-banner [message]="infoMessage()" type="success" />
+
+  <form (ngSubmit)="onVerify()" class="otp-form">
+    <div class="otp-input-wrapper">
+      <input
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        name="otpCode"
+        class="otp-input"
+        placeholder="• • • • • •"
+        [ngModel]="otpCode()"
+        (ngModelChange)="onOtpInput($event)"
+        autocomplete="one-time-code"
+        autofocus
+      />
+    </div>
+
+    <app-ui-button
+      type="submit"
+      variant="primary"
+      [disabled]="!isOtpValid()"
+      [loading]="isLoading()"
+      loadingText="Verifying..."
+    >
+      Verify &amp; Continue
+    </app-ui-button>
+  </form>
+
+  <div class="resend-row">
+    <span>Didn't receive the code?</span>
+    <button
+      type="button"
+      class="btn-resend"
+      [disabled]="isResending()"
+      (click)="onResendOtp()"
+    >
+      {{ isResending() ? 'Sending...' : 'Resend OTP' }}
+    </button>
+  </div>
+</app-auth-card-shell>

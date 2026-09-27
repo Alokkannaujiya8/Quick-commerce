@@ -1,0 +1,63 @@
+:host {
+  display: inline-block;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  line-height: 1;
+  user-select: none;
+
+  &--badge {
+    background: #f8cb46;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(248, 203, 70, 0.35);
+
+    .logo-quick {
+      color: #111827;
+    }
+
+    .logo-cart {
+      color: #0c831f;
+    }
+  }
+
+  &--inline {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+
+    .logo-quick {
+      color: #10b981;
+    }
+
+    .logo-cart {
+      color: var(--text-primary, #111827);
+    }
+  }
+
+  &--sm {
+    padding: 0.45rem 0.85rem;
+    font-size: 1.2rem;
+    border-radius: 12px;
+  }
+
+  &--md {
+    padding: 0.65rem 1.15rem;
+    font-size: 1.55rem;
+    border-radius: 16px;
+  }
+
+  &--lg {
+    padding: 0.85rem 1.4rem;
+    font-size: 1.85rem;
+    border-radius: 18px;
+  }
+
+  &.brand-logo--inline {
+    padding: 0;
+  }
+}

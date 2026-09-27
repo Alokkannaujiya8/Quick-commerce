@@ -27,15 +27,15 @@ public sealed class JwtTokenService : IJwtTokenService
 
         var issuer = jwtSection["Issuer"] ?? "QuickCart";
         var audience = jwtSection["Audience"] ?? "QuickCart.Client";
-        var secretKey = jwtSection["SecretKey"] 
+        var secretKey = jwtSection["SecretKey"]
             ?? "QuickCart_Default_Jwt_Secret_Key_At_Least_32_Bytes_Long_2026!";
 
-        var accessMinutes = int.TryParse(jwtSection["AccessTokenMinutes"], out var parsedAccess) 
-            ? parsedAccess 
+        var accessMinutes = int.TryParse(jwtSection["AccessTokenMinutes"], out var parsedAccess)
+            ? parsedAccess
             : 15;
 
-        var refreshDays = int.TryParse(jwtSection["RefreshTokenDays"], out var parsedRefresh) 
-            ? parsedRefresh 
+        var refreshDays = int.TryParse(jwtSection["RefreshTokenDays"], out var parsedRefresh)
+            ? parsedRefresh
             : 30;
 
         var accessExpiresAt = DateTime.UtcNow.AddMinutes(accessMinutes);
@@ -46,9 +46,13 @@ public sealed class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.MobilePhone, user.PhoneNumber)
+            new(ClaimTypes.Name, user.FullName)
         };
+
+        if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+        {
+            claims.Add(new Claim(ClaimTypes.MobilePhone, user.PhoneNumber));
+        }
 
         if (!string.IsNullOrWhiteSpace(user.Email))
         {
@@ -73,4 +77,3 @@ public sealed class JwtTokenService : IJwtTokenService
         return new TokenResponse(accessToken, accessExpiresAt, refreshToken, refreshExpiresAt);
     }
 }
-

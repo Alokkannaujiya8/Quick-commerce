@@ -1,0 +1,52 @@
+<header class="header">
+  <div class="header-container">
+    <div class="brand-section">
+      <a routerLink="/" class="logo-link">
+        <app-brand-logo size="md" variant="inline" />
+      </a>
+      <div class="delivery-badge">
+        <span class="bolt">⚡</span>
+        <div class="delivery-text">
+          <span class="delivery-time">10-15 MINS</span>
+          <span class="delivery-loc">Bengaluru, 560001</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-section">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Search for groceries, snacks, beverages..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+        />
+      </div>
+    </div>
+
+    <div class="action-section">
+      <app-theme-toggle [showLabel]="true" />
+
+      @if (auth.currentUser(); as user) {
+        <div class="user-menu">
+          <span class="user-name">👤 {{ user.fullName }}</span>
+          <button (click)="auth.logout()" class="btn-text">Logout</button>
+        </div>
+      } @else {
+        <a routerLink="/login" class="btn-account">
+          <span class="account-icon">👤</span>
+          <span>Sign In</span>
+        </a>
+      }
+
+      <button class="btn-cart" (click)="cart.toggleDrawer()">
+        <span class="cart-icon">🛒</span>
+        <div class="cart-info">
+          <span class="cart-count">{{ cart.totalItems() }} items</span>
+          <span class="cart-total">₹{{ cart.subtotal() | number: '1.2-2' }}</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</header>

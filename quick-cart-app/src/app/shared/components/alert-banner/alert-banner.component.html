@@ -1,0 +1,12 @@
+@if (message(); as msg) {
+  <div
+    class="alert-banner"
+    [class.alert-banner--error]="type() === 'error'"
+    [class.alert-banner--info]="type() === 'info'"
+    [class.alert-banner--success]="type() === 'success'"
+    [class.alert-banner--warning]="type() === 'warning'"
+    role="status"
+  >
+    {{ msg }}
+  </div>
+}

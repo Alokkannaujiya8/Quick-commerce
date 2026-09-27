@@ -20,6 +20,7 @@ public sealed class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
+            .Include(u => u.ExternalLogins)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
@@ -29,6 +30,7 @@ public sealed class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
+            .Include(u => u.ExternalLogins)
             .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
     }
 
@@ -38,7 +40,32 @@ public sealed class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
+            .Include(u => u.ExternalLogins)
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
+    public async Task<ApplicationUser?> GetByExternalLoginAsync(
+        string provider,
+        string providerUserId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.RefreshTokens)
+            .Include(u => u.ExternalLogins)
+            .FirstOrDefaultAsync(
+                u => u.ExternalLogins.Any(el => el.Provider == provider && el.ProviderUserId == providerUserId),
+                cancellationToken);
+    }
+
+    public async Task<ExternalLogin?> FindExternalLoginAsync(
+        string provider,
+        string providerUserId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.ExternalLogins
+            .FirstOrDefaultAsync(
+                el => el.Provider == provider && el.ProviderUserId == providerUserId,
+                cancellationToken);
     }
 
     public async Task<ApplicationUser?> GetByRefreshTokenHashAsync(
@@ -47,6 +74,7 @@ public sealed class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
+            .Include(u => u.ExternalLogins)
             .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.TokenHash == tokenHash), cancellationToken);
     }
 
@@ -80,9 +108,15 @@ public sealed class UserRepository : IUserRepository
         await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
     }
 
+    public async Task AddExternalLoginAsync(
+        ExternalLogin externalLogin,
+        CancellationToken cancellationToken = default)
+    {
+        await _context.ExternalLogins.AddAsync(externalLogin, cancellationToken);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
-

@@ -37,9 +37,17 @@ public static class DependencyInjection
                         });
                 });
             }
+
+            services.Configure<GoogleAuthenticationOptions>(
+                configuration.GetSection(GoogleAuthenticationOptions.SectionName));
+        }
+        else
+        {
+            services.Configure<GoogleAuthenticationOptions>(_ => { });
         }
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
@@ -51,12 +59,15 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var jwtSection = configuration.GetSection("Jwt");
-        var secretKey = jwtSection["SecretKey"] 
+        var secretKey = jwtSection["SecretKey"]
             ?? "QuickCart_Default_Jwt_Secret_Key_At_Least_32_Bytes_Long_2026!";
         var issuer = jwtSection["Issuer"] ?? "QuickCart";
         var audience = jwtSection["Audience"] ?? "QuickCart.Client";
 
         var keyBytes = Encoding.UTF8.GetBytes(secretKey);
+
+        services.Configure<GoogleAuthenticationOptions>(
+            configuration.GetSection(GoogleAuthenticationOptions.SectionName));
 
         services.AddAuthentication(options =>
         {
@@ -85,4 +96,3 @@ public static class DependencyInjection
         return services;
     }
 }
-

@@ -1,5 +1,6 @@
 namespace Identity.Infrastructure.Services;
 
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using BuildingBlocks.Application.Exceptions;
@@ -10,13 +11,24 @@ using Identity.Domain.Enums;
 
 public sealed class IdentityService : IIdentityService
 {
+    public const string GoogleProvider = "Google";
+
+    private sealed record OtpEntry(string Code, DateTime ExpiresAt);
+
+    private static readonly ConcurrentDictionary<string, OtpEntry> _otpStore = new();
+
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IGoogleTokenValidator? _googleTokenValidator;
 
-    public IdentityService(IUserRepository userRepository, IJwtTokenService jwtTokenService)
+    public IdentityService(
+        IUserRepository userRepository,
+        IJwtTokenService jwtTokenService,
+        IGoogleTokenValidator? googleTokenValidator = null)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _jwtTokenService = jwtTokenService ?? throw new ArgumentNullException(nameof(jwtTokenService));
+        _googleTokenValidator = googleTokenValidator;
     }
 
     public async Task<AuthResponse> RegisterAsync(
@@ -83,7 +95,9 @@ public sealed class IdentityService : IIdentityService
             user = await _userRepository.GetByPhoneNumberAsync(NormalizePhone(normalizedLogin), cancellationToken);
         }
 
-        if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        if (user is null ||
+            string.IsNullOrWhiteSpace(user.PasswordHash) ||
+            !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid credentials.");
         }
@@ -97,6 +111,228 @@ public sealed class IdentityService : IIdentityService
         await _userRepository.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse(MapUser(user), tokenResponse);
+    }
+
+    public Task<bool> SendOtpAsync(
+        string phoneNumber,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            throw new ValidationException(nameof(phoneNumber), "Phone number is required.");
+
+        var normalizedPhone = NormalizePhone(phoneNumber);
+        if (normalizedPhone.Length != 10 || !normalizedPhone.All(char.IsDigit))
+            throw new ValidationException(nameof(phoneNumber), "A valid 10-digit phone number is required.");
+
+        var code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+        var expiresAt = DateTime.UtcNow.AddMinutes(5);
+
+        _otpStore[normalizedPhone] = new OtpEntry(code, expiresAt);
+
+        Console.WriteLine($"[DEV OTP] Phone: +91{normalizedPhone} | Code: {code} (Expires in 5 mins)");
+
+        return Task.FromResult(true);
+    }
+
+    public async Task<AuthResponse> VerifyOtpAsync(
+        string phoneNumber,
+        string code,
+        string? deviceName,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            throw new ValidationException(nameof(phoneNumber), "Phone number is required.");
+
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ValidationException(nameof(code), "OTP code is required.");
+
+        var normalizedPhone = NormalizePhone(phoneNumber);
+        var trimmedCode = code.Trim();
+
+        if (!_otpStore.TryGetValue(normalizedPhone, out var entry) ||
+            DateTime.UtcNow >= entry.ExpiresAt ||
+            !string.Equals(entry.Code, trimmedCode, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException("Invalid or expired OTP code.");
+        }
+
+        _otpStore.TryRemove(normalizedPhone, out _);
+
+        var user = await _userRepository.GetByPhoneNumberAsync(normalizedPhone, cancellationToken);
+        if (user is null)
+        {
+            var randomPasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
+            var defaultName = $"QuickCart User ({normalizedPhone[^4..]})";
+            user = new ApplicationUser(Guid.NewGuid(), defaultName, normalizedPhone, randomPasswordHash, null);
+            user.VerifyPhoneNumber();
+            await _userRepository.AddAsync(user, cancellationToken);
+        }
+        else
+        {
+            if (user.Status != UserStatus.Active)
+                throw new UnauthorizedAccessException("User account is not active.");
+
+            if (!user.PhoneNumberVerified)
+                user.VerifyPhoneNumber();
+        }
+
+        var tokenResponse = await CreateAndAttachRefreshTokenAsync(user, deviceName ?? "Phone OTP", cancellationToken);
+        await _userRepository.SaveChangesAsync(cancellationToken);
+
+        return new AuthResponse(MapUser(user), tokenResponse);
+    }
+
+    public async Task<AuthResponse> GoogleLoginAsync(
+        string idToken,
+        string? deviceName = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(idToken))
+            throw new ValidationException(nameof(idToken), "Google ID token is required.");
+
+        if (_googleTokenValidator is null)
+            throw new UnauthorizedAccessException("Google authentication validator is not configured.");
+
+        var googlePayload = await _googleTokenValidator.ValidateAsync(idToken, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(googlePayload.Subject))
+            throw new UnauthorizedAccessException("Google token is missing subject claim.");
+
+        if (string.IsNullOrWhiteSpace(googlePayload.Email))
+            throw new UnauthorizedAccessException("Google token is missing email claim.");
+
+        if (!googlePayload.EmailVerified)
+            throw new UnauthorizedAccessException("Google email address is not verified.");
+
+        var normalizedEmail = googlePayload.Email.Trim().ToLowerInvariant();
+        var providerUserId = googlePayload.Subject.Trim();
+
+        // Case 1: Existing user already linked with this Google Subject ID
+        var user = await _userRepository.GetByExternalLoginAsync(
+            GoogleProvider,
+            providerUserId,
+            cancellationToken);
+
+        if (user is not null)
+        {
+            if (user.Status != UserStatus.Active)
+                throw new UnauthorizedAccessException("User account is not active.");
+
+            var linkedLogin = user.ExternalLogins.FirstOrDefault(
+                x => x.Provider == GoogleProvider && x.ProviderUserId == providerUserId);
+            linkedLogin?.RecordLogin(normalizedEmail);
+
+            user.UpdateExternalProfile(
+                googlePayload.GivenName,
+                googlePayload.FamilyName,
+                googlePayload.PictureUrl,
+                googlePayload.Name);
+
+            if (!user.EmailVerified)
+                user.VerifyEmail();
+        }
+        else
+        {
+            // Guard against duplicate external identity if repository has standalone external login record
+            var existingExternal = await _userRepository.FindExternalLoginAsync(
+                GoogleProvider,
+                providerUserId,
+                cancellationToken);
+            if (existingExternal is not null)
+            {
+                throw new ConflictException("This Google account is already linked to another user.");
+            }
+
+            // Case 2: Existing QuickCart user with the same verified email
+            user = await _userRepository.GetByEmailAsync(normalizedEmail, cancellationToken);
+
+            if (user is not null)
+            {
+                if (user.Status != UserStatus.Active)
+                    throw new UnauthorizedAccessException("User account is not active.");
+
+                var existingGoogleForUser = user.ExternalLogins.FirstOrDefault(x => x.Provider == GoogleProvider);
+                if (existingGoogleForUser is not null &&
+                    !string.Equals(existingGoogleForUser.ProviderUserId, providerUserId, StringComparison.Ordinal))
+                {
+                    throw new ConflictException("User account is already linked to a different Google identity.");
+                }
+
+                if (existingGoogleForUser is null)
+                {
+                    var externalLogin = new ExternalLogin(
+                        Guid.NewGuid(),
+                        user.Id,
+                        GoogleProvider,
+                        providerUserId,
+                        normalizedEmail);
+
+                    user.AddExternalLogin(externalLogin);
+                    await _userRepository.AddExternalLoginAsync(externalLogin, cancellationToken);
+                }
+                else
+                {
+                    existingGoogleForUser.RecordLogin(normalizedEmail);
+                }
+
+                user.UpdateExternalProfile(
+                    googlePayload.GivenName,
+                    googlePayload.FamilyName,
+                    googlePayload.PictureUrl,
+                    googlePayload.Name);
+
+                if (!user.EmailVerified)
+                    user.VerifyEmail();
+            }
+            else
+            {
+                // Case 3: Completely new Google user
+                var displayName = !string.IsNullOrWhiteSpace(googlePayload.Name)
+                    ? googlePayload.Name.Trim()
+                    : $"{googlePayload.GivenName} {googlePayload.FamilyName}".Trim();
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = normalizedEmail.Split('@')[0];
+                }
+
+                user = ApplicationUser.CreateExternalUser(
+                    Guid.NewGuid(),
+                    displayName,
+                    normalizedEmail,
+                    emailVerified: true,
+                    firstName: googlePayload.GivenName,
+                    lastName: googlePayload.FamilyName,
+                    profilePictureUrl: googlePayload.PictureUrl);
+
+                var externalLogin = new ExternalLogin(
+                    Guid.NewGuid(),
+                    user.Id,
+                    GoogleProvider,
+                    providerUserId,
+                    normalizedEmail);
+
+                user.AddExternalLogin(externalLogin);
+
+                await _userRepository.AddAsync(user, cancellationToken);
+                await _userRepository.AddExternalLoginAsync(externalLogin, cancellationToken);
+            }
+        }
+
+        var tokenResponse = await CreateAndAttachRefreshTokenAsync(
+            user,
+            deviceName ?? "Google Sign-In",
+            cancellationToken);
+
+        await _userRepository.SaveChangesAsync(cancellationToken);
+
+        return new AuthResponse(MapUser(user), tokenResponse);
+    }
+
+    public static string? GetDevOtpForTesting(string phoneNumber)
+    {
+        var normalized = NormalizePhone(phoneNumber);
+        return _otpStore.TryGetValue(normalized, out var entry) ? entry.Code : null;
     }
 
     public async Task<AuthResponse> RefreshTokenAsync(
@@ -193,7 +429,10 @@ public sealed class IdentityService : IIdentityService
             user.Email,
             user.Status.ToString(),
             user.PhoneNumberVerified,
-            user.EmailVerified
+            user.EmailVerified,
+            user.FirstName,
+            user.LastName,
+            user.ProfilePictureUrl
         );
     }
 
@@ -236,4 +475,3 @@ public sealed class IdentityService : IIdentityService
             throw new ValidationException(nameof(password), "Password must contain at least 8 characters.");
     }
 }
-

@@ -1,6 +1,7 @@
 namespace Identity.Presentation.Controllers;
 
 using System.Security.Claims;
+using BuildingBlocks.Application.Exceptions;
 using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using Identity.Presentation.Models;
@@ -66,6 +67,124 @@ public sealed class AuthController : ControllerBase
                 Title = "Unauthorized",
                 Detail = ex.Message,
                 Instance = HttpContext.Request.Path
+            });
+        }
+    }
+
+    [HttpPost("otp/send")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendOtp(
+        [FromBody] SendOtpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var success = await _identityService.SendOtpAsync(
+            request.PhoneNumber,
+            cancellationToken);
+
+        return Ok(new { success });
+    }
+
+    [HttpPost("otp/verify")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> VerifyOtp(
+        [FromBody] VerifyOtpRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _identityService.VerifyOtpAsync(
+                request.PhoneNumber,
+                request.Code,
+                request.DeviceName,
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Detail = ex.Message,
+                Instance = HttpContext.Request.Path
+            });
+        }
+    }
+
+    [HttpPost("google")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> GoogleLogin(
+        [FromBody] GoogleAuthRequest? request,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.IdToken))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = "Google ID token is required.",
+                Instance = HttpContext?.Request?.Path
+            });
+        }
+
+        try
+        {
+            var result = await _identityService.GoogleLoginAsync(
+                request.IdToken,
+                "Google Sign-In",
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = ex.Message,
+                Instance = HttpContext?.Request?.Path
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Detail = ex.Message,
+                Instance = HttpContext?.Request?.Path
+            });
+        }
+        catch (ConflictException ex)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Conflict",
+                Detail = ex.Message,
+                Instance = HttpContext?.Request?.Path
+            });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal Server Error",
+                Detail = "An unexpected error occurred while processing Google authentication.",
+                Instance = HttpContext?.Request?.Path
             });
         }
     }
@@ -140,7 +259,7 @@ public sealed class AuthController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier) 
+        var value = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? User.FindFirstValue("sub");
 
         if (!Guid.TryParse(value, out var userId))
@@ -151,4 +270,3 @@ public sealed class AuthController : ControllerBase
         return userId;
     }
 }
-

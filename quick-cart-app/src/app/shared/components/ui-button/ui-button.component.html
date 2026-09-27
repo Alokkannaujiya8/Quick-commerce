@@ -1,0 +1,16 @@
+<button
+  [attr.type]="type()"
+  class="ui-btn"
+  [class.ui-btn--primary]="variant() === 'primary'"
+  [class.ui-btn--outline]="variant() === 'outline'"
+  [class.ui-btn--soft]="variant() === 'soft'"
+  [class.ui-btn--full]="fullWidth()"
+  [disabled]="disabled() || loading()"
+  (click)="onClick($event)"
+>
+  @if (loading()) {
+    <span class="ui-btn__loader">{{ loadingText() }}</span>
+  } @else {
+    <ng-content />
+  }
+</button>

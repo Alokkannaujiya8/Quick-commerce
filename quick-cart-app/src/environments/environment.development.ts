@@ -1,2 +1,5 @@
-export const environment = { production: false, apiUrl: 'http://localhost:5000/api' };
-
+export const environment = {
+  production: false,
+  apiUrl: 'https://localhost:7189/api',
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+};

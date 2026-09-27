@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl;
+  private readonly baseUrl = (environment as any).apiUrl || 'http://localhost:5000/api';
 
   get<T>(endpoint: string, params?: Record<string, string | number | boolean>): Observable<T> {
     let httpParams = new HttpParams();

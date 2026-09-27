@@ -1,0 +1,45 @@
+<div class="auth-backdrop">
+  <div class="auth-card">
+    <a [routerLink]="backLink()" class="back-btn" [attr.aria-label]="backAriaLabel()">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+    </a>
+
+    <div class="theme-btn-slot">
+      <app-theme-toggle />
+    </div>
+
+    <div class="logo-wrap">
+      <app-brand-logo size="md" variant="badge" />
+    </div>
+
+    <h1 class="card-title">{{ title() }}</h1>
+    @if (subtitle()) {
+      <p class="card-subtitle">{{ subtitle() }}</p>
+    }
+
+    <div class="card-body">
+      <ng-content />
+    </div>
+
+    @if (showLegalFooter()) {
+      <p class="legal-footer">
+        By continuing, you agree to our
+        <a routerLink="/" class="legal-link">Terms of service</a>
+        &amp;
+        <a routerLink="/" class="legal-link">Privacy policy</a>
+      </p>
+    }
+  </div>
+</div>

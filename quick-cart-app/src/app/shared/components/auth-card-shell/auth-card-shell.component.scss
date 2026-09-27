@@ -1,0 +1,109 @@
+:host {
+  display: block;
+}
+
+.auth-backdrop {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  background: var(
+    --auth-backdrop,
+    radial-gradient(circle at 20% 20%, rgba(250, 204, 21, 0.16), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.16), transparent 45%),
+    linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)
+  );
+  transition: background 0.25s ease;
+}
+
+.auth-card {
+  position: relative;
+  background: var(--bg-card, #ffffff);
+  width: 100%;
+  max-width: 420px;
+  border-radius: 22px;
+  padding: 2.25rem 2rem 1.85rem;
+  box-shadow: var(
+    --card-shadow,
+    0 24px 48px rgba(17, 24, 39, 0.14),
+    0 4px 12px rgba(17, 24, 39, 0.06)
+  );
+  border: 1px solid var(--border-color, transparent);
+  text-align: center;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.back-btn {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary, #1f2937);
+  background: var(--bg-surface, #f9fafb);
+  border: 1px solid var(--border-color, transparent);
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.15s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--bg-hover, #f3f4f6);
+    transform: translateX(-2px);
+  }
+}
+
+.theme-btn-slot {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+  margin-bottom: 1.1rem;
+}
+
+.card-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.3px;
+}
+
+.card-subtitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary, #4b5563);
+  margin: 0 0 1.4rem;
+}
+
+.card-body {
+  width: 100%;
+}
+
+.legal-footer {
+  margin: 1.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted, #9ca3af);
+  line-height: 1.45;
+}
+
+.legal-link {
+  color: var(--text-secondary, #6b7280);
+  text-decoration: underline;
+  font-weight: 500;
+
+  &:hover {
+    color: var(--text-primary, #111827);
+  }
+}

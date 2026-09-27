@@ -39,10 +39,18 @@ namespace Identity.Infrastructure.Persistence.Migrations
                     b.Property<bool>("EmailVerified")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -50,12 +58,15 @@ namespace Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
                     b.Property<bool>("PhoneNumberVerified")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -76,10 +87,47 @@ namespace Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("Users", "identity");
                 });
 
+            modelBuilder.Entity("Identity.Domain.Entities.ExternalLogin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<DateTime>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ProviderUserId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Provider", "ProviderUserId")
+                        .IsUnique();
+
+                    b.ToTable("ExternalLogins", "identity");
+                });
+
             modelBuilder.Entity("Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -113,6 +161,17 @@ namespace Identity.Infrastructure.Persistence.Migrations
                     b.ToTable("RefreshTokens", "identity");
                 });
 
+            modelBuilder.Entity("Identity.Domain.Entities.ExternalLogin", b =>
+                {
+                    b.HasOne("Identity.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("ExternalLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Identity.Domain.Entities.ApplicationUser", "User")
@@ -126,6 +185,8 @@ namespace Identity.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Identity.Domain.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("ExternalLogins");
+
                     b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618

@@ -66,5 +66,33 @@ public class JwtTokenServiceTests
         var emailClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         Assert.Equal(user.Email, emailClaim);
     }
-}
 
+    [Fact]
+    public void CreateTokens_ExternalGoogleUserWithoutPhone_GeneratesValidJwtAndRefreshToken()
+    {
+        // Arrange
+        var service = new JwtTokenService(_configuration);
+        var googleUser = ApplicationUser.CreateExternalUser(
+            Guid.NewGuid(),
+            "Google User",
+            "googleuser@gmail.com",
+            emailVerified: true,
+            firstName: "Google",
+            lastName: "User"
+        );
+
+        // Act
+        var result = service.CreateTokens(googleUser);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(string.IsNullOrWhiteSpace(result.AccessToken));
+        Assert.False(string.IsNullOrWhiteSpace(result.RefreshToken));
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(result.AccessToken);
+        Assert.Equal(googleUser.Id.ToString(), jwt.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+        Assert.Equal("googleuser@gmail.com", jwt.Claims.First(c => c.Type == ClaimTypes.Email).Value);
+        Assert.DoesNotContain(jwt.Claims, c => c.Type == ClaimTypes.MobilePhone);
+    }
+}

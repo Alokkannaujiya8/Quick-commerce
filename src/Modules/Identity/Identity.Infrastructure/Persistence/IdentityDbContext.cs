@@ -12,6 +12,8 @@ public class IdentityDbContext : DbContext
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("identity");

@@ -1,0 +1,84 @@
+<app-auth-card-shell
+  title="Create Account"
+  subtitle="Get instant 10-minute delivery to your doorstep"
+  backLink="/login"
+  backAriaLabel="Back to Login"
+  [showLegalFooter]="true"
+>
+  <app-alert-banner [message]="errorMessage()" type="error" />
+
+  <form (ngSubmit)="onSubmit()" class="auth-form">
+    <div class="form-group">
+      <label for="fullName">Full Name</label>
+      <input
+        id="fullName"
+        type="text"
+        name="fullName"
+        placeholder="e.g. Rahul Sharma"
+        [(ngModel)]="formData.fullName"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        placeholder="name@example.com"
+        [(ngModel)]="formData.email"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input
+        id="phone"
+        type="tel"
+        name="phoneNumber"
+        placeholder="+91 98765 43210"
+        [(ngModel)]="formData.phoneNumber"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="pwd">Password</label>
+      <input
+        id="pwd"
+        type="password"
+        name="password"
+        placeholder="At least 6 characters"
+        [(ngModel)]="formData.password"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPwd">Confirm Password</label>
+      <input
+        id="confirmPwd"
+        type="password"
+        name="confirmPassword"
+        placeholder="Re-enter your password"
+        [(ngModel)]="confirmPassword"
+        required
+      />
+    </div>
+
+    <app-ui-button
+      type="submit"
+      variant="primary"
+      [loading]="isLoading()"
+      loadingText="Creating Account..."
+    >
+      Sign Up &amp; Start Shopping
+    </app-ui-button>
+  </form>
+
+  <div class="auth-footer">
+    Already have an account? <a routerLink="/login">Sign In</a>
+  </div>
+</app-auth-card-shell>

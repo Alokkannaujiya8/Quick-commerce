@@ -1,4 +1,4 @@
-{
+﻿{
   "profiles": {
     "QuickCart.Api": {
       "commandName": "Project",
@@ -6,7 +6,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:65116;http://localhost:65117"
+      "applicationUrl": "https://localhost:7189;http://localhost:5000"
     }
   }
 }

@@ -1,0 +1,10 @@
+<div
+  class="brand-logo"
+  [class.brand-logo--sm]="size() === 'sm'"
+  [class.brand-logo--md]="size() === 'md'"
+  [class.brand-logo--lg]="size() === 'lg'"
+  [class.brand-logo--badge]="variant() === 'badge'"
+  [class.brand-logo--inline]="variant() === 'inline'"
+>
+  <span class="logo-quick">quick</span><span class="logo-cart">cart</span>
+</div>
