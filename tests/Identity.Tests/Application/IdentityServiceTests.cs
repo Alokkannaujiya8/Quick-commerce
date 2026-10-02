@@ -152,6 +152,29 @@ public class IdentityServiceTests
         Assert.Equal("mock-access-token", result.Tokens.AccessToken);
     }
 
+    [Fact]
+    public async Task VerifyOtpAsync_ExceedingMaxFailedAttempts_InvalidatesOtpAndRejectsSubsequentValidCode()
+    {
+        // Arrange
+        var phone = "9112233445";
+        await _service.SendOtpAsync(phone);
+        var validCode = IdentityService.GetDevOtpForTesting(phone)!;
+        Assert.NotNull(validCode);
+
+        // Act: Fail 5 times
+        for (var i = 0; i < 5; i++)
+        {
+            var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.VerifyOtpAsync(phone, "000000", "Web"));
+            Assert.Equal("Invalid or expired OTP code.", ex.Message);
+        }
+
+        // Assert: 6th attempt with previously valid code must fail because OTP was pruned/invalidated
+        var finalEx = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            _service.VerifyOtpAsync(phone, validCode, "Web"));
+        Assert.Equal("Invalid or expired OTP code.", finalEx.Message);
+    }
+
     // =========================================================================
     // Google Sign-In Unit Tests (Section 22)
     // =========================================================================

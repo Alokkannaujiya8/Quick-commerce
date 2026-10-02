@@ -8,16 +8,21 @@ using Identity.Presentation.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 [ApiController]
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
 {
     private readonly IIdentityService _identityService;
+    private readonly ILogger<AuthController>? _logger;
 
-    public AuthController(IIdentityService identityService)
+    public AuthController(
+        IIdentityService identityService,
+        ILogger<AuthController>? logger = null)
     {
         _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -66,7 +71,7 @@ public sealed class AuthController : ControllerBase
                 Status = StatusCodes.Status401Unauthorized,
                 Title = "Unauthorized",
                 Detail = ex.Message,
-                Instance = HttpContext.Request.Path
+                Instance = HttpContext?.Request?.Path
             });
         }
     }
@@ -112,7 +117,7 @@ public sealed class AuthController : ControllerBase
                 Status = StatusCodes.Status401Unauthorized,
                 Title = "Unauthorized",
                 Detail = ex.Message,
-                Instance = HttpContext.Request.Path
+                Instance = HttpContext?.Request?.Path
             });
         }
     }
@@ -122,6 +127,7 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> GoogleLogin(
         [FromBody] GoogleAuthRequest? request,
@@ -129,6 +135,7 @@ public sealed class AuthController : ControllerBase
     {
         if (request is null || string.IsNullOrWhiteSpace(request.IdToken))
         {
+            _logger?.LogWarning("Google authentication rejected: missing idToken in request.");
             return BadRequest(new ProblemDetails
             {
                 Status = StatusCodes.Status400BadRequest,
@@ -145,10 +152,12 @@ public sealed class AuthController : ControllerBase
                 "Google Sign-In",
                 cancellationToken);
 
+            _logger?.LogInformation("Google authentication succeeded for UserId {UserId}.", result.User.Id);
             return Ok(result);
         }
         catch (ValidationException ex)
         {
+            _logger?.LogWarning("Google authentication validation failed: {Reason}", ex.Message);
             return BadRequest(new ProblemDetails
             {
                 Status = StatusCodes.Status400BadRequest,
@@ -157,8 +166,23 @@ public sealed class AuthController : ControllerBase
                 Instance = HttpContext?.Request?.Path
             });
         }
+        catch (UnauthorizedAccessException ex) when (
+            ex.Message.Contains("not active", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("blocked", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("suspended", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger?.LogWarning("Google authentication forbidden for inactive/blocked user: {Reason}", ex.Message);
+            return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+            {
+                Status = StatusCodes.Status403Forbidden,
+                Title = "Forbidden",
+                Detail = ex.Message,
+                Instance = HttpContext?.Request?.Path
+            });
+        }
         catch (UnauthorizedAccessException ex)
         {
+            _logger?.LogWarning("Google authentication unauthorized: {Reason}", ex.Message);
             return Unauthorized(new ProblemDetails
             {
                 Status = StatusCodes.Status401Unauthorized,
@@ -169,6 +193,7 @@ public sealed class AuthController : ControllerBase
         }
         catch (ConflictException ex)
         {
+            _logger?.LogWarning("Google authentication account conflict: {Reason}", ex.Message);
             return Conflict(new ProblemDetails
             {
                 Status = StatusCodes.Status409Conflict,
@@ -177,8 +202,9 @@ public sealed class AuthController : ControllerBase
                 Instance = HttpContext?.Request?.Path
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger?.LogError(ex, "Unexpected error occurred during Google authentication.");
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,
@@ -214,7 +240,7 @@ public sealed class AuthController : ControllerBase
                 Status = StatusCodes.Status401Unauthorized,
                 Title = "Unauthorized",
                 Detail = ex.Message,
-                Instance = HttpContext.Request.Path
+                Instance = HttpContext?.Request?.Path
             });
         }
     }

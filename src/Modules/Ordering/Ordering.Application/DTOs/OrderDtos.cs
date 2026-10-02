@@ -29,8 +29,17 @@ public record OrderDto(
     IReadOnlyList<OrderItemDto> Items,
     IReadOnlyList<OrderStatusHistoryDto> StatusHistory);
 
+public record CheckoutItemRequest(
+    Guid ProductId,
+    string ProductName,
+    string? Sku,
+    decimal UnitPrice,
+    int Quantity);
+
 public record CheckoutRequest(
     Guid DeliveryAddressId,
     string PaymentMethod,
-    string? Notes = null);
-
+    string? Notes = null,
+    IReadOnlyList<CheckoutItemRequest>? Items = null,
+    decimal? DeliveryFee = null,
+    decimal? DiscountAmount = null);

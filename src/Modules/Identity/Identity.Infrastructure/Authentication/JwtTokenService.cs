@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 
 public sealed class JwtTokenService : IJwtTokenService
 {
+    public const string DefaultSecretKey = "QuickCart_Default_Jwt_Secret_Key_At_Least_32_Bytes_Long_2026!";
+
     private readonly IConfiguration _configuration;
 
     public JwtTokenService(IConfiguration configuration)
@@ -27,8 +29,7 @@ public sealed class JwtTokenService : IJwtTokenService
 
         var issuer = jwtSection["Issuer"] ?? "QuickCart";
         var audience = jwtSection["Audience"] ?? "QuickCart.Client";
-        var secretKey = jwtSection["SecretKey"]
-            ?? "QuickCart_Default_Jwt_Secret_Key_At_Least_32_Bytes_Long_2026!";
+        var secretKey = jwtSection["SecretKey"] ?? DefaultSecretKey;
 
         var accessMinutes = int.TryParse(jwtSection["AccessTokenMinutes"], out var parsedAccess)
             ? parsedAccess

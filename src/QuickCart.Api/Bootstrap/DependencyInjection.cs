@@ -18,6 +18,7 @@ using Inventory.Infrastructure;
 using Inventory.Infrastructure.Persistence;
 using Delivery.Infrastructure;
 using Delivery.Infrastructure.Persistence;
+using Payment.Infrastructure;
 using Payment.Infrastructure.Persistence;
 using Promotion.Infrastructure.Persistence;
 
@@ -61,7 +62,8 @@ public static class DependencyInjection
 
         // 5. Database Contexts (PostgreSQL via Npgsql)
         var connectionString = configuration.GetConnectionString("QuickCartDb")
-            ?? "Host=localhost;Port=5432;Database=quickcartdb;Username=postgres;Password=Mom@2026";
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Database connection string 'QuickCartDb' or 'DefaultConnection' is not configured.");
 
         services.AddDbContext<CatalogDbContext>((sp, options) =>
         {
@@ -119,8 +121,8 @@ public static class DependencyInjection
         services.AddIdentityAuthentication(configuration);
         services.AddInventoryInfrastructure();
         services.AddDeliveryInfrastructure();
+        services.AddPaymentInfrastructure(configuration);
 
         return services;
     }
 }
-

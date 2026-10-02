@@ -8,27 +8,32 @@ using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using Identity.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
 public sealed class IdentityService : IIdentityService
 {
     public const string GoogleProvider = "Google";
+    public const int MaxOtpVerificationAttempts = 5;
 
-    private sealed record OtpEntry(string Code, DateTime ExpiresAt);
+    private sealed record OtpEntry(string Code, DateTime ExpiresAt, int FailedAttempts = 0);
 
     private static readonly ConcurrentDictionary<string, OtpEntry> _otpStore = new();
 
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IGoogleTokenValidator? _googleTokenValidator;
+    private readonly ILogger<IdentityService>? _logger;
 
     public IdentityService(
         IUserRepository userRepository,
         IJwtTokenService jwtTokenService,
-        IGoogleTokenValidator? googleTokenValidator = null)
+        IGoogleTokenValidator? googleTokenValidator = null,
+        ILogger<IdentityService>? logger = null)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _jwtTokenService = jwtTokenService ?? throw new ArgumentNullException(nameof(jwtTokenService));
         _googleTokenValidator = googleTokenValidator;
+        _logger = logger;
     }
 
     public async Task<AuthResponse> RegisterAsync(
@@ -124,12 +129,21 @@ public sealed class IdentityService : IIdentityService
         if (normalizedPhone.Length != 10 || !normalizedPhone.All(char.IsDigit))
             throw new ValidationException(nameof(phoneNumber), "A valid 10-digit phone number is required.");
 
+        var now = DateTime.UtcNow;
+        foreach (var kvp in _otpStore)
+        {
+            if (kvp.Value.ExpiresAt <= now)
+            {
+                _otpStore.TryRemove(kvp.Key, out _);
+            }
+        }
+
         var code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
-        var expiresAt = DateTime.UtcNow.AddMinutes(5);
+        var expiresAt = now.AddMinutes(5);
 
-        _otpStore[normalizedPhone] = new OtpEntry(code, expiresAt);
+        _otpStore[normalizedPhone] = new OtpEntry(code, expiresAt, 0);
 
-        Console.WriteLine($"[DEV OTP] Phone: +91{normalizedPhone} | Code: {code} (Expires in 5 mins)");
+        _logger?.LogDebug("[DEV OTP] Phone: +91{Phone} | Code: {Code} (Expires in 5 mins)", normalizedPhone, code);
 
         return Task.FromResult(true);
     }
@@ -149,10 +163,29 @@ public sealed class IdentityService : IIdentityService
         var normalizedPhone = NormalizePhone(phoneNumber);
         var trimmedCode = code.Trim();
 
-        if (!_otpStore.TryGetValue(normalizedPhone, out var entry) ||
-            DateTime.UtcNow >= entry.ExpiresAt ||
-            !string.Equals(entry.Code, trimmedCode, StringComparison.Ordinal))
+        if (!_otpStore.TryGetValue(normalizedPhone, out var entry))
         {
+            throw new UnauthorizedAccessException("Invalid or expired OTP code.");
+        }
+
+        if (DateTime.UtcNow >= entry.ExpiresAt)
+        {
+            _otpStore.TryRemove(normalizedPhone, out _);
+            throw new UnauthorizedAccessException("Invalid or expired OTP code.");
+        }
+
+        if (!string.Equals(entry.Code, trimmedCode, StringComparison.Ordinal))
+        {
+            var nextAttempts = entry.FailedAttempts + 1;
+            if (nextAttempts >= MaxOtpVerificationAttempts)
+            {
+                _otpStore.TryRemove(normalizedPhone, out _);
+            }
+            else
+            {
+                _otpStore[normalizedPhone] = entry with { FailedAttempts = nextAttempts };
+            }
+
             throw new UnauthorizedAccessException("Invalid or expired OTP code.");
         }
 

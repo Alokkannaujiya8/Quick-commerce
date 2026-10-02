@@ -1,5 +1,6 @@
 namespace Ordering.Presentation.Controllers;
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Ordering.Application.DTOs;
 using Ordering.Application.Services;
@@ -8,6 +9,7 @@ using Ordering.Application.Services;
 [Route("api/orders")]
 public class OrdersController : ControllerBase
 {
+    private static readonly Guid FallbackGuestUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private readonly IOrderService _orderService;
 
     public OrdersController(IOrderService orderService)
@@ -18,9 +20,17 @@ public class OrdersController : ControllerBase
     [HttpPost("checkout")]
     public async Task<ActionResult<OrderDto>> Checkout([FromBody] CheckoutRequest request, CancellationToken cancellationToken)
     {
-        var sampleUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var order = await _orderService.CreateOrderAsync(sampleUserId, request, cancellationToken);
+        var userId = ResolveUserId();
+        var order = await _orderService.CreateOrderAsync(userId, request, cancellationToken);
         return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, order);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetMyOrders(CancellationToken cancellationToken)
+    {
+        var userId = ResolveUserId();
+        var orders = await _orderService.GetUserOrdersAsync(userId, cancellationToken);
+        return Ok(orders);
     }
 
     [HttpGet("{id:guid}")]
@@ -42,5 +52,12 @@ public class OrdersController : ControllerBase
         if (order is null) return NotFound();
         return Ok(order);
     }
-}
 
+    private Guid ResolveUserId()
+    {
+        var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        return Guid.TryParse(claimValue, out var parsed) ? parsed : FallbackGuestUserId;
+    }
+}

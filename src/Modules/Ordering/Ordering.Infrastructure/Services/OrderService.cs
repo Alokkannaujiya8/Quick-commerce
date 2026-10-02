@@ -22,20 +22,27 @@ public class OrderService : IOrderService
         var orderNumber = $"QC-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
         var now = DateTime.UtcNow;
 
-        var order = new Order
+        List<OrderItem> orderItems;
+        if (request.Items is { Count: > 0 })
         {
-            Id = orderId,
-            OrderNumber = orderNumber,
-            UserId = userId,
-            DeliveryAddressId = request.DeliveryAddressId,
-            Status = OrderStatus.Placed,
-            Subtotal = 149.00m,
-            DeliveryFee = 0.00m,
-            DiscountAmount = 0.00m,
-            TotalAmount = 149.00m,
-            PlacedAt = now,
-            CreatedAt = now,
-            OrderItems = new List<OrderItem>
+            orderItems = request.Items
+                .Where(i => i.Quantity > 0 && i.UnitPrice >= 0)
+                .Select(i => new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = orderId,
+                    ProductId = i.ProductId == Guid.Empty ? Guid.NewGuid() : i.ProductId,
+                    ProductNameSnapshot = string.IsNullOrWhiteSpace(i.ProductName) ? "QuickCart Item" : i.ProductName.Trim(),
+                    ProductSkuSnapshot = string.IsNullOrWhiteSpace(i.Sku) ? "QC-SKU" : i.Sku.Trim(),
+                    UnitPrice = decimal.Round(i.UnitPrice, 2),
+                    Quantity = i.Quantity,
+                    LineTotal = decimal.Round(i.UnitPrice * i.Quantity, 2)
+                })
+                .ToList();
+        }
+        else
+        {
+            orderItems = new List<OrderItem>
             {
                 new()
                 {
@@ -59,7 +66,32 @@ public class OrderService : IOrderService
                     Quantity = 1,
                     LineTotal = 81.00m
                 }
-            },
+            };
+        }
+
+        var subtotal = orderItems.Sum(i => i.LineTotal);
+        var deliveryFee = request.DeliveryFee.HasValue && request.DeliveryFee.Value >= 0
+            ? decimal.Round(request.DeliveryFee.Value, 2)
+            : (subtotal >= 199m ? 0.00m : 25.00m);
+        var discountAmount = request.DiscountAmount.HasValue && request.DiscountAmount.Value >= 0
+            ? decimal.Round(Math.Min(request.DiscountAmount.Value, subtotal), 2)
+            : 0.00m;
+        var totalAmount = Math.Max(0.01m, decimal.Round(subtotal + deliveryFee - discountAmount, 2));
+
+        var order = new Order
+        {
+            Id = orderId,
+            OrderNumber = orderNumber,
+            UserId = userId,
+            DeliveryAddressId = request.DeliveryAddressId == Guid.Empty ? Guid.NewGuid() : request.DeliveryAddressId,
+            Status = OrderStatus.Placed,
+            Subtotal = subtotal,
+            DeliveryFee = deliveryFee,
+            DiscountAmount = discountAmount,
+            TotalAmount = totalAmount,
+            PlacedAt = now,
+            CreatedAt = now,
+            OrderItems = orderItems,
             OrderStatusHistories = new List<OrderStatusHistory>
             {
                 new()
@@ -68,7 +100,9 @@ public class OrderService : IOrderService
                     OrderId = orderId,
                     Status = OrderStatus.Placed,
                     ChangedAt = now,
-                    Notes = "Order placed by customer."
+                    Notes = string.IsNullOrWhiteSpace(request.Notes)
+                        ? $"Order placed by customer ({request.PaymentMethod})."
+                        : request.Notes
                 }
             }
         };
@@ -173,4 +207,3 @@ public class OrderService : IOrderService
         );
     }
 }
-

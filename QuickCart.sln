@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -120,6 +120,110 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickCart.BenchmarkHost", "benchmarks\QuickCart.BenchmarkHost\QuickCart.BenchmarkHost.csproj", "{DEF35CF0-A4BD-43B0-93D4-E0C09F798AF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Tests", "tests\Identity.Tests\Identity.Tests.csproj", "{E47109F6-299B-4B5A-9689-A41B9AAC9FE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.Tests", "tests\Payment.Tests\Payment.Tests.csproj", "{858785F2-F291-4562-86CE-4589CE81F476}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{C30D7A79-FC06-4882-8033-28D2EE8DB326}"
+	ProjectSection(SolutionItems) = preProject
+		AGENTS.md = AGENTS.md
+		ARCHITECTURE.md = ARCHITECTURE.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6C168DEE-FDB1-4179-985F-723F9011B6BA}"
+	ProjectSection(SolutionItems) = preProject
+		docs\API_CONTRACTS.md = docs\API_CONTRACTS.md
+		docs\ARCHITECTURE.md = docs\ARCHITECTURE.md
+		docs\DATABASE.md = docs\DATABASE.md
+		docs\DEVELOPMENT.md = docs\DEVELOPMENT.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "engineering", "engineering", "{47D6ED4F-F83A-4DEE-835F-62C7A8F60016}"
+	ProjectSection(SolutionItems) = preProject
+		docs\engineering\AI_BOUNDARIES.md = docs\engineering\AI_BOUNDARIES.md
+		docs\engineering\DEPENDENCIES.md = docs\engineering\DEPENDENCIES.md
+		docs\engineering\ERROR_HANDLING.md = docs\engineering\ERROR_HANDLING.md
+		docs\engineering\OBSERVABILITY.md = docs\engineering\OBSERVABILITY.md
+		docs\engineering\PERFORMANCE.md = docs\engineering\PERFORMANCE.md
+		docs\engineering\RULES.md = docs\engineering\RULES.md
+		docs\engineering\SECURITY.md = docs\engineering\SECURITY.md
+		docs\engineering\TECH_STACK.md = docs\engineering\TECH_STACK.md
+		docs\engineering\TESTING.md = docs\engineering\TESTING.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "architecture", "architecture", "{59461FC4-BF3E-4848-A9EE-1DDF050DAB57}"
+	ProjectSection(SolutionItems) = preProject
+		docs\architecture\api.md = docs\architecture\api.md
+		docs\architecture\application.md = docs\architecture\application.md
+		docs\architecture\authentication-authorization.md = docs\architecture\authentication-authorization.md
+		docs\architecture\background-workers.md = docs\architecture\background-workers.md
+		docs\architecture\caching.md = docs\architecture\caching.md
+		docs\architecture\database.md = docs\architecture\database.md
+		docs\architecture\deployment.md = docs\architecture\deployment.md
+		docs\architecture\domain.md = docs\architecture\domain.md
+		docs\architecture\hyperlocal-darkstore-serviceability.md = docs\architecture\hyperlocal-darkstore-serviceability.md
+		docs\architecture\infrastructure.md = docs\architecture\infrastructure.md
+		docs\architecture\integrations.md = docs\architecture\integrations.md
+		docs\architecture\modules.md = docs\architecture\modules.md
+		docs\architecture\multi-tenancy.md = docs\architecture\multi-tenancy.md
+		docs\architecture\order-delivery-state-machine.md = docs\architecture\order-delivery-state-machine.md
+		docs\architecture\README.md = docs\architecture\README.md
+		docs\architecture\solution-structure.md = docs\architecture\solution-structure.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "diagrams", "diagrams", "{A3D4022C-E567-4F25-9A8E-39602395C0B7}"
+	ProjectSection(SolutionItems) = preProject
+		docs\architecture\diagrams\module-dependencies.md = docs\architecture\diagrams\module-dependencies.md
+		docs\architecture\diagrams\README.md = docs\architecture\diagrams\README.md
+		docs\architecture\diagrams\request-flow.md = docs\architecture\diagrams\request-flow.md
+		docs\architecture\diagrams\system-overview.md = docs\architecture\diagrams\system-overview.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D6DCC9D1-6CE3-404A-8302-3CFE29F01329}"
+	ProjectSection(SolutionItems) = preProject
+		docs\adr\ADR-0001-hyperlocal-darkstore-serviceability.md = docs\adr\ADR-0001-hyperlocal-darkstore-serviceability.md
+		docs\adr\ADR-0002-order-delivery-state-machine.md = docs\adr\ADR-0002-order-delivery-state-machine.md
+		docs\adr\ADR-0003-multi-schema-database-isolation.md = docs\adr\ADR-0003-multi-schema-database-isolation.md
+		docs\adr\ADR-0004-jwt-refresh-token-authentication.md = docs\adr\ADR-0004-jwt-refresh-token-authentication.md
+		docs\adr\ADR-0005-hmac-sha256-payment-idempotency.md = docs\adr\ADR-0005-hmac-sha256-payment-idempotency.md
+		docs\adr\README.md = docs\adr\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai", "ai", "{F4F5A4E3-5C7A-4E0E-8C79-C39D90F6B864}"
+	ProjectSection(SolutionItems) = preProject
+		docs\ai\CURRENT_STATE.md = docs\ai\CURRENT_STATE.md
+		docs\ai\DECISIONS.md = docs\ai\DECISIONS.md
+		docs\ai\ENGINEERING_MEMORY.md = docs\ai\ENGINEERING_MEMORY.md
+		docs\ai\WORKFLOW.md = docs\ai\WORKFLOW.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tasks", "tasks", "{9BD918F6-C526-485A-92BA-575496AB1919}"
+	ProjectSection(SolutionItems) = preProject
+		docs\ai\tasks\README.md = docs\ai\tasks\README.md
+		docs\ai\tasks\TASK-TEMPLATE.md = docs\ai\tasks\TASK-TEMPLATE.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reports", "reports", "{897148E4-CB7D-4D48-B8C3-1986883768AF}"
+	ProjectSection(SolutionItems) = preProject
+		docs\ai\reports\2026-10-02-backend-documentation-audit-report.md = docs\ai\reports\2026-10-02-backend-documentation-audit-report.md
+		docs\ai\reports\README.md = docs\ai\reports\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{7B895F6A-35B4-4B2E-8E2E-73DFA65BD26E}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\build.ps1 = scripts\build.ps1
+		scripts\migrate-database.ps1 = scripts\migrate-database.ps1
+		scripts\run-dev.ps1 = scripts\run-dev.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{21A37861-1CE4-4E57-BF68-DDA8993FE137}"
+	ProjectSection(SolutionItems) = preProject
+		.config\dotnet-tools.json = .config\dotnet-tools.json
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -671,6 +775,18 @@ Global
 		{E47109F6-299B-4B5A-9689-A41B9AAC9FE4}.Release|x64.Build.0 = Release|Any CPU
 		{E47109F6-299B-4B5A-9689-A41B9AAC9FE4}.Release|x86.ActiveCfg = Release|Any CPU
 		{E47109F6-299B-4B5A-9689-A41B9AAC9FE4}.Release|x86.Build.0 = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|x64.Build.0 = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Debug|x86.Build.0 = Debug|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|Any CPU.Build.0 = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|x64.ActiveCfg = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|x64.Build.0 = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|x86.ActiveCfg = Release|Any CPU
+		{858785F2-F291-4562-86CE-4589CE81F476}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -731,5 +847,17 @@ Global
 		{C95154D3-6F39-47E3-B8A1-5DBDCFDEA95F} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{DEF35CF0-A4BD-43B0-93D4-E0C09F798AF1} = {66320409-64EC-F7C5-3DEF-65E7510DAAD1}
 		{E47109F6-299B-4B5A-9689-A41B9AAC9FE4} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{858785F2-F291-4562-86CE-4589CE81F476} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{6C168DEE-FDB1-4179-985F-723F9011B6BA} = {C30D7A79-FC06-4882-8033-28D2EE8DB326}
+		{47D6ED4F-F83A-4DEE-835F-62C7A8F60016} = {6C168DEE-FDB1-4179-985F-723F9011B6BA}
+		{59461FC4-BF3E-4848-A9EE-1DDF050DAB57} = {6C168DEE-FDB1-4179-985F-723F9011B6BA}
+		{A3D4022C-E567-4F25-9A8E-39602395C0B7} = {59461FC4-BF3E-4848-A9EE-1DDF050DAB57}
+		{D6DCC9D1-6CE3-404A-8302-3CFE29F01329} = {6C168DEE-FDB1-4179-985F-723F9011B6BA}
+		{F4F5A4E3-5C7A-4E0E-8C79-C39D90F6B864} = {6C168DEE-FDB1-4179-985F-723F9011B6BA}
+		{9BD918F6-C526-485A-92BA-575496AB1919} = {F4F5A4E3-5C7A-4E0E-8C79-C39D90F6B864}
+		{897148E4-CB7D-4D48-B8C3-1986883768AF} = {F4F5A4E3-5C7A-4E0E-8C79-C39D90F6B864}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E2A0627-7ED4-49E1-825C-8FA1BC1E50A2}
 	EndGlobalSection
 EndGlobal
