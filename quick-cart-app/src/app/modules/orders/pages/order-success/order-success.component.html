@@ -1,0 +1,100 @@
+<div class="success-page">
+  <div class="success-card">
+    <div class="header-section">
+      <div class="success-icon">✓</div>
+      <h2>Order Confirmed!</h2>
+      <p class="subtitle">Sit back and relax! Your groceries are arriving in ~10 minutes.</p>
+    </div>
+
+    @if (order(); as ord) {
+      <div class="order-quick-info">
+        <div>
+          <span class="label">Order ID</span>
+          <strong class="value">{{ ord.orderNumber }}</strong>
+        </div>
+        <div>
+          <span class="label">Payment Status</span>
+          <strong class="value">{{ ord.paymentMethod }} ({{ paymentBadgeLabel() }})</strong>
+          @if (paymentReference(); as ref) {
+            <span class="tx-ref">Ref: {{ ref }}</span>
+          }
+        </div>
+        <div>
+          <span class="label">Server-Verified Total</span>
+          <strong class="value highlight">₹{{ ord.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="tracker-section">
+        <h4>Live Order Status</h4>
+        <div class="tracker-steps">
+          <div class="step completed">
+            <div class="step-dot">✓</div>
+            <div class="step-text">
+              <strong>Order Placed</strong>
+              <span>Confirmed with store</span>
+            </div>
+          </div>
+          <div class="step-line active"></div>
+          <div class="step active">
+            <div class="step-dot pulse">🛒</div>
+            <div class="step-text">
+              <strong>Packing Items</strong>
+              <span>Dark store agent picking fresh</span>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <div class="step-dot">🛵</div>
+            <div class="step-text">
+              <strong>Out for Delivery</strong>
+              <span>Rider on the way</span>
+            </div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <div class="step-dot">🏠</div>
+            <div class="step-text">
+              <strong>Delivered</strong>
+              <span>At your doorstep</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <div class="address-box">
+          <h4>Delivering To</h4>
+          <p class="name">
+            <strong>{{ ord.shippingAddress.fullName }}</strong> ({{ ord.shippingAddress.addressType }})
+          </p>
+          <p class="phone">📞 {{ ord.shippingAddress.phoneNumber }}</p>
+          <p class="street">
+            {{ ord.shippingAddress.streetAddress }}, {{ ord.shippingAddress.city }} -
+            {{ ord.shippingAddress.postalCode }}
+          </p>
+        </div>
+
+        <div class="items-box">
+          <h4>Items in this order ({{ ord.items.length }})</h4>
+          <div class="order-items-list">
+            @for (item of ord.items; track item.productId) {
+              <div class="item-row">
+                <span class="item-qty-name">{{ item.quantity }}x {{ item.productName }}</span>
+                <span class="item-price">₹{{ item.totalPrice | number:'1.2-2' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="loading-box">
+        <p>Loading your order & payment verification details...</p>
+      </div>
+    }
+
+    <div class="action-footer">
+      <a routerLink="/" class="btn-home">Continue Shopping</a>
+    </div>
+  </div>
+</div>

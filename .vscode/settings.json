@@ -1,0 +1,31 @@
+{
+  "dotnet.defaultSolution": "QuickCart.sln",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts.map, ${capture}.*.ts",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.component.ts": "${capture}.component.html, ${capture}.component.scss, ${capture}.component.spec.ts",
+    "*.service.ts": "${capture}.service.spec.ts",
+    "*.cs": "${capture}.*.cs",
+    "*.csproj": "*.props, *.targets",
+    "QuickCart.sln": "Directory.Build.props, Directory.Build.targets, Directory.Packages.props, global.json, NuGet.config"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "quick-cart-app/.angular": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/bin": true,
+    "**/obj": true,
+    "quick-cart-app/.angular": true
+  }
+}
+

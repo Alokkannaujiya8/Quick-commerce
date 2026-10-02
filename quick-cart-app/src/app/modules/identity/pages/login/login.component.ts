@@ -94,8 +94,9 @@ export class LoginComponent {
           const msg =
             err?.error?.detail ||
             err?.error?.message ||
-            err?.message ||
-            'Google Sign-In failed. Please try again.';
+            (err?.status === 401
+              ? 'Google account could not be verified.'
+              : err?.message || 'Google sign-in failed. Please try again.');
           this.toastMessage.set(msg);
         },
       });

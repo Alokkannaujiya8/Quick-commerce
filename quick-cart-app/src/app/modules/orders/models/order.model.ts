@@ -1,10 +1,19 @@
-﻿export type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'OutForDelivery' | 'Delivered' | 'Cancelled';
+export type OrderStatus =
+  | 'Placed'
+  | 'Pending'
+  | 'Confirmed'
+  | 'Packed'
+  | 'Processing'
+  | 'OutForDelivery'
+  | 'Delivered'
+  | 'Cancelled';
 
 export type PaymentMethod = 'COD' | 'UPI' | 'CARD' | 'WALLET';
 
 export interface OrderItemDto {
   productId: string;
   productName: string;
+  sku?: string;
   unitPrice: number;
   quantity: number;
   totalPrice: number;
@@ -44,7 +53,8 @@ export interface OrderResponse {
   orderDate: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: 'Pending' | 'Paid' | 'Failed';
+  paymentStatus: 'Pending' | 'Initiated' | 'Captured' | 'Paid' | 'Failed';
+  paymentTransactionId?: string;
   totalAmount: number;
   deliveryFee: number;
   shippingAddress: ShippingAddress;

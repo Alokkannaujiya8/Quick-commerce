@@ -245,3 +245,51 @@ Retrieves details and real-time status of an order.
 * `ReceiveOrderStatusUpdate(string orderId, string newStatus)`: Dispatched when an order state transitions.
 * `ReceiveRiderLocationUpdate(string orderId, double latitude, double longitude, int etaMinutes)`: Streamed periodically as the delivery rider moves towards the delivery address.
 
+
+---
+
+## 7. Payment & Webhook Endpoints
+
+### `POST /api/payments/intents`
+Creates an idempotent payment intent using the server-verified order total from `Ordering`.
+
+**Request**:
+```json
+{
+  "orderId": "5fa23d11-6548-43bb-81d3-f0a51e60472e",
+  "paymentMethod": "UPI",
+  "idempotencyKey": "idem-5fa23d11-UPI"
+}
+```
+
+**Response (201 Created / 200 OK on idempotent replay)**:
+```json
+{
+  "paymentId": "8c11e320-12a4-4f99-9a00-71b83c992104",
+  "orderId": "5fa23d11-6548-43bb-81d3-f0a51e60472e",
+  "amount": 108.00,
+  "currency": "INR",
+  "paymentMethod": "UPI",
+  "status": "Initiated",
+  "providerName": "QuickCartPay",
+  "providerOrderId": "order_9f81c2b3d4e5",
+  "providerKeyId": "qcp_test_local_dev",
+  "isIdempotentReplay": false,
+  "createdAt": "2026-09-27T08:00:00Z"
+}
+```
+
+### `POST /api/payments/verify`
+Verifies checkout payment signature using constant-time `HMAC-SHA256`, captures the payment, and transitions the order to `Confirmed`.
+
+### `POST /api/payments/webhook`
+Server-to-server payment provider webhook verified via `X-Payment-Signature` (`HMAC-SHA256`) and deduplicated via `payment."PaymentWebhookEvents"` (`ProviderEventId`).
+
+### `GET /api/payments/order/{orderId}`
+Retrieves payment details and audit trail for a given order.
+
+### `POST /api/payments/{id}/retry`
+Re-initiates a failed payment with a new provider order reference and increments `RetryCount`.
+
+### `POST /api/payments/{id}/refund`
+Processes a partial or full refund with immutable audit logging.

@@ -174,3 +174,44 @@ Or apply a single module:
 ./scripts/migrate-database.ps1 -Module Ordering
 ```
 
+
+---
+
+### 💳 Schema: `payment`
+
+#### Table: `payment.Payments`
+* `Id` (`uuid`, PK)
+* `OrderId` (`uuid`, NOT NULL, INDEX `IX_Payments_OrderId`)
+* `UserId` (`uuid`, NOT NULL)
+* `Amount` (`numeric(12,2)`, NOT NULL): Authoritative server-verified order amount.
+* `RefundedAmount` (`numeric(12,2)`, NOT NULL, DEFAULT 0.00)
+* `Currency` (`varchar(10)`, NOT NULL, DEFAULT 'INR')
+* `Method` (`varchar(30)`, NOT NULL): `UPI`, `Card`, `Wallet`, `CashOnDelivery`.
+* `Status` (`varchar(30)`, NOT NULL): `Pending`, `Initiated`, `Authorized`, `Captured`, `Failed`, `Refunded`, `PartiallyRefunded`, `Cancelled`.
+* `ProviderName` (`varchar(50)`, NOT NULL)
+* `ProviderOrderId` (`varchar(128)`, NOT NULL, UNIQUE INDEX `IX_Payments_ProviderOrderId`)
+* `ProviderPaymentId` (`varchar(128)`, NULL)
+* `IdempotencyKey` (`varchar(128)`, NOT NULL, UNIQUE INDEX `IX_Payments_IdempotencyKey`)
+* `FailureReason` (`varchar(500)`, NULL)
+* `RetryCount` (`integer`, NOT NULL, DEFAULT 0)
+* `CreatedAt` (`timestamptz`, NOT NULL)
+* `UpdatedAt` (`timestamptz`, NULL)
+* `CompletedAt` (`timestamptz`, NULL)
+
+#### Table: `payment.PaymentAuditLogs`
+* `Id` (`uuid`, PK)
+* `PaymentId` (`uuid`, NOT NULL, FK to `payment.Payments.Id` ON DELETE CASCADE)
+* `EventType` (`varchar(60)`, NOT NULL)
+* `PreviousStatus` (`varchar(30)`, NOT NULL)
+* `NewStatus` (`varchar(30)`, NOT NULL)
+* `ProviderReference` (`varchar(128)`, NULL)
+* `Notes` (`varchar(500)`, NULL)
+* `CreatedAt` (`timestamptz`, NOT NULL)
+
+#### Table: `payment.PaymentWebhookEvents`
+* `Id` (`uuid`, PK)
+* `ProviderEventId` (`varchar(128)`, NOT NULL, UNIQUE INDEX `IX_PaymentWebhookEvents_ProviderEventId`)
+* `EventType` (`varchar(60)`, NOT NULL)
+* `PaymentId` (`uuid`, NULL)
+* `PayloadHash` (`varchar(128)`, NOT NULL): SHA-256 digest of raw webhook payload.
+* `ProcessedAt` (`timestamptz`, NOT NULL)

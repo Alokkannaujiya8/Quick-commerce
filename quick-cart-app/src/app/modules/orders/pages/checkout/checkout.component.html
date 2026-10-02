@@ -1,0 +1,243 @@
+<div class="checkout-page">
+  <div class="checkout-header">
+    <a routerLink="/" class="back-link">← Back to Store</a>
+    <h2>Checkout & Instant Delivery</h2>
+    <div class="express-pill">⚡ Guaranteed Delivery in 10 mins</div>
+  </div>
+
+  @if (errorMessage(); as error) {
+    <div class="checkout-error-banner" role="alert">
+      <span>⚠️ {{ error }}</span>
+    </div>
+  }
+
+  @if (cart.items().length === 0) {
+    <div class="empty-state">
+      <div class="icon">🛒</div>
+      <h3>Your cart is empty</h3>
+      <p>Please add products to your cart before proceeding to checkout.</p>
+      <a routerLink="/" class="btn-primary">Browse Catalog</a>
+    </div>
+  } @else {
+    <div class="checkout-grid">
+      <!-- Left Column: Delivery & Payment Details -->
+      <div class="checkout-form-col">
+        <!-- 1. Delivery Address Section -->
+        <section class="checkout-card">
+          <div class="card-title">
+            <span class="step-num">1</span>
+            <h3>Delivery Address</h3>
+          </div>
+
+          <div class="form-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName">Recipient Name</label>
+                <input
+                  id="fullName"
+                  type="text"
+                  [(ngModel)]="address.fullName"
+                  placeholder="e.g. Rahul Sharma"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  id="phone"
+                  type="tel"
+                  [(ngModel)]="address.phoneNumber"
+                  placeholder="e.g. +91 98765 43210"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="street">Flat / House No. / Street Address</label>
+              <input
+                id="street"
+                type="text"
+                [(ngModel)]="address.streetAddress"
+                placeholder="Flat 402, Sunshine Heights, 12th Main Road"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">City</label>
+                <input
+                  id="city"
+                  type="text"
+                  [(ngModel)]="address.city"
+                  placeholder="Bengaluru"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="pincode">Postal / Pincode</label>
+                <input
+                  id="pincode"
+                  type="text"
+                  [(ngModel)]="address.postalCode"
+                  placeholder="560001"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="address-type-selector">
+              <label>Address Type:</label>
+              <div class="type-pills">
+                <button
+                  type="button"
+                  [class.active]="address.addressType === 'Home'"
+                  (click)="address.addressType = 'Home'"
+                >
+                  🏠 Home
+                </button>
+                <button
+                  type="button"
+                  [class.active]="address.addressType === 'Work'"
+                  (click)="address.addressType = 'Work'"
+                >
+                  🏢 Work
+                </button>
+                <button
+                  type="button"
+                  [class.active]="address.addressType === 'Other'"
+                  (click)="address.addressType = 'Other'"
+                >
+                  📍 Other
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Payment Method Section -->
+        <section class="checkout-card">
+          <div class="card-title">
+            <span class="step-num">2</span>
+            <h3>Payment Method</h3>
+          </div>
+
+          <div class="payment-options">
+            <label
+              class="payment-option"
+              [class.selected]="selectedPayment === 'UPI'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="UPI"
+                [(ngModel)]="selectedPayment"
+              />
+              <div class="option-content">
+                <span class="option-icon">⚡</span>
+                <div>
+                  <strong>Instant UPI (Recommended)</strong>
+                  <p>Google Pay, PhonePe, Paytm — Verified via HMAC-SHA256 Gateway</p>
+                </div>
+              </div>
+            </label>
+
+            <label
+              class="payment-option"
+              [class.selected]="selectedPayment === 'CARD'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="CARD"
+                [(ngModel)]="selectedPayment"
+              />
+              <div class="option-content">
+                <span class="option-icon">💳</span>
+                <div>
+                  <strong>Credit / Debit Card</strong>
+                  <p>Visa, MasterCard, RuPay with 3D Secure Server Verification</p>
+                </div>
+              </div>
+            </label>
+
+            <label
+              class="payment-option"
+              [class.selected]="selectedPayment === 'COD'"
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="COD"
+                [(ngModel)]="selectedPayment"
+              />
+              <div class="option-content">
+                <span class="option-icon">💵</span>
+                <div>
+                  <strong>Cash on Delivery / UPI on Delivery</strong>
+                  <p>Pay with cash or QR scan when your order arrives at your door</p>
+                </div>
+              </div>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Order Summary & Pay Action -->
+      <div class="order-summary-col">
+        <div class="summary-card">
+          <h3>Order Summary</h3>
+          <div class="items-preview">
+            @for (item of cart.items(); track item.productId) {
+              <div class="summary-item">
+                <div class="item-name-qty">
+                  <span class="name">{{ item.name }}</span>
+                  <span class="qty">Qty: {{ item.quantity }}</span>
+                </div>
+                <span class="price">₹{{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="bill-breakdown">
+            <div class="bill-row">
+              <span>Item Total</span>
+              <span>₹{{ cart.subtotal() | number:'1.2-2' }}</span>
+            </div>
+            <div class="bill-row">
+              <span>Delivery Charge (10 Mins)</span>
+              <span>
+                @if (cart.deliveryFee() === 0) {
+                  <strong class="free-badge">FREE</strong>
+                } @else {
+                  ₹{{ cart.deliveryFee() | number:'1.2-2' }}
+                }
+              </span>
+            </div>
+            <div class="bill-row grand-total">
+              <span>To Pay</span>
+              <span class="grand-price">₹{{ cart.totalAmount() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <button
+            class="btn-place-order"
+            [disabled]="isSubmitting()"
+            (click)="placeOrder()"
+          >
+            @if (isSubmitting()) {
+              <span>{{ paymentStepMessage() }}</span>
+            } @else {
+              <span>Pay & Place Order • ₹{{ cart.totalAmount() | number:'1.2-2' }}</span>
+            }
+          </button>
+
+          <div class="trust-notice">
+            <span>🔒 Server-Verified Amount & HMAC-SHA256 Signed Payment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
